@@ -1,13 +1,15 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useRef } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import CustomButton from './src/components/CustomButton';
+import { LeftSide, RightSide } from './src/logic/MathParser';
 
 export default function App() {
   const [bufferState, setBufferState] = React.useState('');
-  const [displayBuffer, setDisplayBufferState] = React.useState('');
   const [memoryState, setMemoryState] = React.useState(0.0);
   const [historyBufferState, setHistoryBufferState] = React.useState('');
   const [isError, setIsError] = React.useState(false);
+
+  const historyScrollRef = useRef(null);
 
   {/* TODO: Add method for build operation text */ }
   const clearBuffer = () => {
@@ -17,44 +19,50 @@ export default function App() {
   const removeLast = () => {
     if (bufferState.length > 0) {
       setBufferState(bufferState.substr(0, bufferState.length - 1));
-      
     }
-    setDisplayBufferState(bufferState.replace("√", "math.sqrt("));
   }
   const addToBuffer = (value) => {
     if (!isError) {
+      const chars = "+-/^x√%";
+      const brackets = "().";
+      const lastChar = bufferState.substr(bufferState.length - 1, 1);
+      if (value == ".") {
+        if (chars.includes(lastChar) || lastChar == "(")
+          value = "0.";
+        else if (brackets.includes(lastChar))
+          value = "";
+      }
+      else if (chars.includes(value) && chars.includes(lastChar))
+        value = "";
       setBufferState(bufferState + value);
-      
     }
-    setDisplayBufferState(bufferState.replace('√', 'math.sqrt('));
-
   }
   const calculate = () => {
-    setDisplayBufferState(bufferState.replace('√', 'math.sqrt('));
-    const calculatedValue = parseCalculateString(displayBuffer);
+    const calculated = parseCalculate(bufferState);
 
-    if (typeof calculatedValue == "string" && calculatedValue.includes("Błąd"))
+    if (typeof calculated == "string" && calculated.includes("Błąd"))
       setIsError(true);
-    else
-      setMemoryState(calculatedValue);
+    else if (calculated != undefined)
+      setMemoryState(calculated);
 
-    setHistoryBufferState(bufferState + " = " + calculatedValue);
+    setHistoryBufferState(historyBufferState + "\n" + bufferState + " = " + calculated);
     setBufferState("");
+
+    historyScrollRef.current.scrollToEnd({ animated: false });
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.aboutContainer}>
-
-      </View>
       <View style={styles.historyContainer}>
-        <Text style={styles.historyText}>{historyBufferState}</Text>
+        <ScrollView ref={historyScrollRef}>
+          <Text style={styles.historyText}>{historyBufferState}</Text>
+        </ScrollView>
       </View>
       <View style={styles.calcContainer}>
         <Text style={styles.text}>{bufferState}</Text>
       </View>
       <View style={styles.buttonsRow}>
-        <CustomButton text="√" mode="1" onTap={() => addToBuffer("√")} />
+        <CustomButton text="√" mode="1" onTap={() => addToBuffer("√(")} />
         <CustomButton text="AC" mode="2" onTap={clearBuffer} />
         <CustomButton text="D" mode="2" onTap={removeLast} />
         <CustomButton text="%" mode="2" onTap={() => addToBuffer("%")} />
@@ -107,14 +115,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end'
   },
   historyContainer: {
-    flex: 1,
+    flex: 3,
     backgroundColor: 'black',
     alignItems: 'flex-end',
     justifyContent: 'flex-end'
-  },
-  aboutContainer: {
-    flex: 2,
-    backgroundColor: 'black'
   },
   buttonsRow: {
     flex: 1,
@@ -131,39 +135,44 @@ const styles = StyleSheet.create({
   }
 });
 
+const parseCalculate = calculateString => {
+  const encoded = calculateString.replace("√", "Math.sqrt").replace("x", "*").replace("π", Math.PI);
+  var percentChanger = encoded;
 
-const parseCalculateString = calculateString => {
-  console.log(calculateString);
-  let returnValue = "";
-  calculateString = calculateString.replace("π", Math.PI).replace('+-', '-').replace('-+', '-').replace('--', '+').replace("*+", "*").replace("/+", "/").replace("^+", "^").replace("√+", "√").replace("x", "*").replace('√','Math.sqrt');
+  while (true) {
+    if (percentChanger.includes('%')) {
+      const percentIndex = percentChanger.indexOf('%');
+      const left = LeftSide(percentChanger, percentIndex);
+      const leftTemp = left[1] == -1 ? "" : percentChanger.substr(0, left[1] + 1);
+      const rightTemp = percentChanger.substr(percentIndex + 1);
 
-  const signs = ["x*/^%√"];
-  const signs1 = ["+-"];
-
-  const charArray = calculateString.split('');
-
-  charArray.forEach((element, index) => {
-    if (index < charArray.length - 1) {
-      let char1 = charArray[index];
-      let char2 = charArray[index + 1];
-
-      if ((signs.includes(char2) && signs1.includes(char1)) || (signs.includes(char1) && signs.includes(char2)))
-        returnValue = "Błąd";
+      percentChanger = leftTemp + "(" + left[0] + "*0.01)" + rightTemp;
     }
-  });
+    else
+      break;
+  }
+  var powChanger = percentChanger;
+
+  while (true) {
+    if (powChanger.includes('^')) {
+      const powIndex = powChanger.indexOf('^');
+      const left = LeftSide(powChanger, powIndex);
+      const right = RightSide(powChanger, powIndex);
+      const leftTemp = powChanger.substr(0, left[1] + 1);
+      const rightTemp = powChanger.substr(right[1]);
+
+      powChanger = leftTemp + "Math.pow(" + left[0] + "," + right[0] + ")" + rightTemp;
+    }
+    else
+      break;
+  }
 
   try {
-    console.log(calculateString);
-    returnValue = eval(calculateString);
+    return eval(powChanger);
   }
-  catch (err) {
-    returnValue = "Błąd";
+  catch
+  {
+    return "Błąd";
   }
 
-
-  return returnValue;
-
-
-  //()^s*/+-
-  //verify
 }
