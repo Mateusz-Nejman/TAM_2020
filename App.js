@@ -1,54 +1,57 @@
 import React, { useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import CustomButton from './src/components/CustomButton';
-import { LeftSide, RightSide } from './src/logic/MathParser';
+import { MathBuffer } from '@mateusznejman/mathparser-js';
 
 export default function App() {
   const [bufferState, setBufferState] = React.useState('');
-  const [memoryState, setMemoryState] = React.useState(0.0);
   const [historyBufferState, setHistoryBufferState] = React.useState('');
-  const [isError, setIsError] = React.useState(false);
-
+  const [mathBuffer, setMathBuffer] = React.useState(new MathBuffer());
+  const [tempBuffer, setTempBuffer] = React.useState('');
   const historyScrollRef = useRef(null);
 
   {/* TODO: Add method for build operation text */ }
   const clearBuffer = () => {
     setBufferState('');
-    setIsError(false);
+    mathBuffer.buffer = "";
+    setTempBuffer('');
   };
   const removeLast = () => {
     if (bufferState.length > 0) {
       setBufferState(bufferState.substr(0, bufferState.length - 1));
+      setTempBuffer(mathBuffer.Eval(true));
+      mathBuffer.buffer = mathBuffer.buffer.substr(0, mathBuffer.buffer.length - 1);
     }
+  }
+
+  const historyAdd = item => {
+    const lastNewLine = historyBufferState.lastIndexOf('\n');
+    let newValue = historyBufferState.substr(0,lastNewLine);
+    setHistoryBufferState(newValue + "\n" + item + "\n");
   }
   const addToBuffer = (value) => {
-    if (!isError) {
-      const chars = "+-/^x√%";
-      const brackets = "().";
-      const lastChar = bufferState.substr(bufferState.length - 1, 1);
-      if (value == ".") {
-        if (chars.includes(lastChar) || lastChar == "(")
-          value = "0.";
-        else if (brackets.includes(lastChar))
-          value = "";
-      }
-      else if (chars.includes(value) && chars.includes(lastChar))
-        value = "";
-      setBufferState(bufferState + value);
-    }
+    setBufferState(mathBuffer.Add(value));
+    setTempBuffer(mathBuffer.Eval(true));
   }
   const calculate = () => {
-    const calculated = parseCalculate(bufferState);
+    if(mathBuffer.buffer.length > 0)
+    {
+      let calculated = mathBuffer.Eval();
 
-    if (typeof calculated == "string" && calculated.includes("Błąd"))
-      setIsError(true);
-    else if (calculated != undefined)
-      setMemoryState(calculated);
+      if ((typeof calculated == "string" && calculated.includes("Error")) || calculated == undefined)
+        calculated = "Błąd";
 
-    setHistoryBufferState(historyBufferState + "\n" + bufferState + " = " + calculated);
-    setBufferState("");
-
-    historyScrollRef.current.scrollToEnd({ animated: false });
+      if(calculated == Infinity)
+      calculated = "Błąd";
+  
+      //setHistoryBufferState(historyBufferState + "\n" + bufferState + " = " + calculated);
+      historyAdd(bufferState + " = " + calculated);
+      setBufferState("");
+      setTempBuffer("");
+      mathBuffer.buffer = "";
+  
+      historyScrollRef.current.scrollToEnd({ animated: false });
+    }
   }
 
   return (
@@ -59,10 +62,11 @@ export default function App() {
         </ScrollView>
       </View>
       <View style={styles.calcContainer}>
-        <Text style={styles.text}>{bufferState}</Text>
+        <Text style={styles.text1}>{bufferState}</Text>
+        <Text style={styles.text2}>{tempBuffer}</Text>
       </View>
       <View style={styles.buttonsRow}>
-        <CustomButton text="√" mode="1" onTap={() => addToBuffer("√(")} />
+        <CustomButton text="√" mode="1" onTap={() => addToBuffer("√")} />
         <CustomButton text="AC" mode="2" onTap={clearBuffer} />
         <CustomButton text="D" mode="2" onTap={removeLast} />
         <CustomButton text="%" mode="2" onTap={() => addToBuffer("%")} />
@@ -91,7 +95,7 @@ export default function App() {
       </View>
       <View style={styles.buttonsRow}>
         <CustomButton text="^" mode="1" onTap={() => addToBuffer("^")} />
-        <CustomButton text="MEM" mode="2" onTap={() => addToBuffer(memoryState)} />
+        <CustomButton text="" mode="2" />
         <CustomButton text="0" onTap={() => addToBuffer("0")} />
         <CustomButton text="." onTap={() => addToBuffer(".")} />
         <CustomButton text="=" mode="2" onTap={calculate} />
@@ -129,50 +133,16 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 50
   },
+  text1: {
+    color: 'white',
+    fontSize: 25
+  },
+  text2: {
+    color: 'gray',
+    fontSize: 25
+  },
   historyText: {
     color: 'gray',
     fontSize: 46
   }
 });
-
-const parseCalculate = calculateString => {
-  const encoded = calculateString.replace("√", "Math.sqrt").replace("x", "*").replace("π", Math.PI);
-  var percentChanger = encoded;
-
-  while (true) {
-    if (percentChanger.includes('%')) {
-      const percentIndex = percentChanger.indexOf('%');
-      const left = LeftSide(percentChanger, percentIndex);
-      const leftTemp = left[1] == -1 ? "" : percentChanger.substr(0, left[1] + 1);
-      const rightTemp = percentChanger.substr(percentIndex + 1);
-
-      percentChanger = leftTemp + "(" + left[0] + "*0.01)" + rightTemp;
-    }
-    else
-      break;
-  }
-  var powChanger = percentChanger;
-
-  while (true) {
-    if (powChanger.includes('^')) {
-      const powIndex = powChanger.indexOf('^');
-      const left = LeftSide(powChanger, powIndex);
-      const right = RightSide(powChanger, powIndex);
-      const leftTemp = powChanger.substr(0, left[1] + 1);
-      const rightTemp = powChanger.substr(right[1]);
-
-      powChanger = leftTemp + "Math.pow(" + left[0] + "," + right[0] + ")" + rightTemp;
-    }
-    else
-      break;
-  }
-
-  try {
-    return eval(powChanger);
-  }
-  catch
-  {
-    return "Błąd";
-  }
-
-}

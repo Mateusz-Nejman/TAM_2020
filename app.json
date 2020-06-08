@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "HelloWorld",
+    "name": "Simple Calculator",
     "slug": "TAM_Calculator",
     "platforms": [
       "ios",
@@ -23,6 +23,10 @@
     ],
     "ios": {
       "supportsTablet": true
+    },
+    "android": {
+      "package": "com.nejman.calculator",
+      "versionCode": 1
     }
   }
 }
