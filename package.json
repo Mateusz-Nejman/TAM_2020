@@ -8,7 +8,7 @@
     "eject": "expo eject"
   },
   "dependencies": {
-    "@mateusznejman/mathparser-js": "1.0.8",
+    "@mateusznejman/mathparser-js": "^1.0.9",
     "else": "^0.0.1",
     "expo": "~37.0.3",
     "react": "~16.9.0",

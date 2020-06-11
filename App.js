@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import CustomButton from './src/components/CustomButton';
-import { MathBuffer } from '@mateusznejman/mathparser-js';
+import { MathBuffer, POW } from '@mateusznejman/mathparser-js';
 
 export default function App() {
   const [bufferState, setBufferState] = React.useState('');

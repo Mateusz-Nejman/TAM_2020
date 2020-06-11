@@ -1029,10 +1029,10 @@
     "@types/yargs" "^15.0.0"
     chalk "^3.0.0"
 
-"@mateusznejman/mathparser-js@1.0.8":
-  version "1.0.8"
-  resolved "https://registry.yarnpkg.com/@mateusznejman/mathparser-js/-/mathparser-js-1.0.8.tgz#aa2ef9d7efb9c93b85d4b592449ed3dc1b0fad21"
-  integrity sha512-tNdyuAju9yShoAd0LPtPXTu2hSZU5kVXIddbL8t1AXnmTE+d4awALvpLbP4Z/e9KuDTy48lUTv58y50mHUaDsQ==
+"@mateusznejman/mathparser-js@^1.0.9":
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/@mateusznejman/mathparser-js/-/mathparser-js-1.0.9.tgz#9f122391d3130706431cb41729764657d0e8d05f"
+  integrity sha512-JwS4cdrSvPwdNPHLraedEVDoM7oAXGtYCC2OtNXlkRn6gSTGqc+XsHNXNagLDh8kG6PyJ+L/DHQnP3TBcdd8dw==
 
 "@react-native-community/cli-debugger-ui@^3.0.0":
   version "3.0.0"
@@ -3320,9 +3320,6 @@ map-visit@^1.0.0:
   integrity sha1-7Nyo8TFE5mDxtb1B8S80edmN+48=
   dependencies:
     object-visit "^1.0.0"
-
-"mathparser-js@file:../../JS/MathParser-JS":
-  version "1.0.8"
 
 md5-file@^3.2.3:
   version "3.2.3"
