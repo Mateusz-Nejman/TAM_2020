@@ -26,7 +26,12 @@
     },
     "android": {
       "package": "com.nejman.calculator",
-      "versionCode": 2
+      "versionCode": 3
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8a2b825f-e645-4731-ac30-1798ae2fa299"
+      }
     }
   }
 }

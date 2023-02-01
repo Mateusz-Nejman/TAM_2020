@@ -1,24 +1,23 @@
 {
+  "name": "expocalculator",
+  "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web",
-    "eject": "expo eject"
+    "web": "expo start --web"
   },
   "dependencies": {
     "@mateusznejman/mathparser-js": "^1.0.9",
-    "else": "^0.0.1",
-    "expo": "~37.0.3",
-    "react": "~16.9.0",
-    "react-dom": "~16.9.0",
-    "react-native": "https://github.com/expo/react-native/archive/sdk-37.0.1.tar.gz",
-    "react-native-web": "~0.11.7"
+    "expo": "~47.0.12",
+    "expo-status-bar": "~1.4.2",
+    "react": "18.1.0",
+    "react-native": "0.70.5",
+    "expo-dev-client": "~2.0.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.8.6",
-    "babel-preset-expo": "~8.1.0"
+    "@babel/core": "^7.12.9"
   },
   "private": true
 }

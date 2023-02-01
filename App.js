@@ -1,12 +1,12 @@
 import React, { useRef } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import CustomButton from './src/components/CustomButton';
-import { MathBuffer, POW } from '@mateusznejman/mathparser-js';
+import { MathBuffer } from '@mateusznejman/mathparser-js';
 
 export default function App() {
   const [bufferState, setBufferState] = React.useState('');
   const [historyBufferState, setHistoryBufferState] = React.useState('');
-  const [mathBuffer, setMathBuffer] = React.useState(new MathBuffer());
+  const [mathBuffer] = React.useState(new MathBuffer());
   const [tempBuffer, setTempBuffer] = React.useState('');
   const historyScrollRef = useRef(null);
 
